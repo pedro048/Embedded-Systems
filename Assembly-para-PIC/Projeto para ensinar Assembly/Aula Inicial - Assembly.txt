@@ -1,0 +1,310 @@
+-----------------------------------
+ASSEMBLY - Aula Inicial
+Autor: Pedro Victor Andrade Alves
+Computer Engineer Student
+-----------------------------------
+
+
+CONSIDERAÇÕES INICIAIS
+
+movlw	; move uma literal para W
+movwf	; move o valor em W para F, ou seja, o valor da literal em W irá para um registrador
+	; e isso significará algo de acordo com o registrador
+
+
+
+Sempre seguir essa ordem:
+
+1º escrever MOVLW
+Depois MOVWF        ; O MOVWF não fará sentido se não tiver um valor em W para mover para F por isso 
+		    ; o MOVLW vem antes
+
+
+
+Detalhe:
+
+Movendo o mesmo valor em Binário, Hexadecimal e Decimal
+
+movlw	B'00001111'  |  movlw   0x0F | movlw  .15	
+
+     BINÁRIO		HEXADECIMAL	DECIMAL
+
+
+
+ENTRADA OU SAÍDA
+
+movlw	B'00000000'
+movwf	TRISB		; Configura todos os pinos (RB7 à RB0) como saída
+
+
+
+ESCRITA
+
+Só é possível fazer escita em sádas
+
+          RB7 RB6 RB5 RB4 RB3 RB2 RB1 RB0
+movlw	B' 1   1   1   1   1   1   1   1'
+
+movwf	LATB		; Como todos os pinos foram configurados como saída esse MOVWF  PORTB faz a escrita do valor 11111111 no registrador
+			; PORTB acendendo todos os LEDs associados a esses pinos. Quando o LATX ou PORTX for usado, 1 é para acender, isto é, fazer a 
+			; escrita. 
+
+
+
+LEITURA
+
+Só é possível fazer leitura em entradas
+
+Esse programa analisa um botao associado ao pino RB7 e acendo o led do pino RD0
+- ligação pull down
+ 
+movlw	 B'10000000'
+movwf	 TRISB
+
+movlw    B'00000000'
+movwf	 TRISD
+
+loop:
+
+btfss	PORTB, 7     ; O btfss faz a leitura do RD7, porque ele foi configurado como entrada e pula a linha abaixo se 
+		     ; o valor lido for 1	
+
+goto	loop	     ; Caso o valor da leitura seja 0 essa linha será executada e o programa irá para a referência chamada loop 
+		     ; para fazer uma nova analise com btfss, só pulará quando o RD7 for 1			
+
+goto	acende       ; Quando o RD7 for 1 essa linha será executada e o programa irá para a referência acende
+
+acende:
+
+bsf	PORTD, 0	; Seta o RD0
+goto	loop            ; Volta para o loop
+
+end			; Fim do programa							
+
+
+
+
+
+CUIDADO COM AS INSTRUÇÕES ORIENTADAS A BIT
+
+
+
+	A operação é de leitura-modificação-escrita (R-M-W) seguindo a ordem: leitura do PORT, alteração do estado do bit e escrita do valor no PORT. 
+Quando os bits a serem manipulados forem do mesmo PORT e setados de forma sequencial sem nenhum intervale entre uma mudança e outra, somente o último
+bit mudará de estado
+
+O regidtrador LATX atua diretamente na saída do microcontrolador
+
+LEITURA DO LATX
+
+É a leitura do último estado antes da configuração como entrada realizada pelo TRISX
+
+ESCRITA DO LATX
+
+É a escrita no port do microcontrolador, isto é, escrita normal.
+
+SUGESTÕES
+
+Fazer a leitura do port com o registrador PORTX
+Fazer a escrita do port com o registrador LATX, porém o PORTX também pode ser usado
+
+
+
+INSTRUÇÕES 
+
+
+BSF - seta apenas um bit do port
+
+exemplo:  
+
+bsf	PORTD, 1
+
+
+
+
+BCF - limpa apenas um bit do port
+
+exemplo:  
+
+bcf	PORTD, 0
+
+
+
+
+SETF - seta todos os bits do port
+
+exemplo:  
+
+setf	PORTD
+
+
+
+
+CLRF - limpa todos os bits do port
+
+exemplo: 
+
+clrf	PORTD
+
+
+
+BTFSS - analisa um bit do port que precisa ser uma entrada e pula se o valor for 1
+
+exemplo: 
+
+btfss	PORTD, 2
+goto	nao_tem_1
+goto	tem_1
+
+
+
+
+BTFSC - analisa um bit do port que precisa ser uma entrada e pula se o valor for 0
+
+
+exemplo: 
+
+btfss	PORTD, 2
+goto	nao_tem_0
+goto	tem_0
+
+
+
+
+GOTO - vai para uma determinada parte do código
+
+exemplo: 
+
+loop:
+
+goto	loop
+
+
+
+
+CALL - Chama uma rotina e depois de executá-la volta na linha abaixo
+
+exemplo:
+
+call	tempo
+
+tempo:
+
+-
+-
+-
+
+
+
+
+CPFSEQ - Compara se é igual
+
+exemplo:
+
+movlw	      .10
+CPFSEQ	      numero  ; compara se o valor em numero é igual a 10
+
+
+
+
+		
+CPFSGT - Compara se é maior
+
+exemplo:
+
+movlw	      .9
+CPFSGT	      numero  ; compara se o valor em numero é maior que 9
+
+
+	
+
+CPFSLT - Compara se é menor
+
+
+exemplo:
+
+movlw	      .5
+CPFSGT	      numero  ; compara se o valor em numero é menor que 5
+
+
+	
+
+
+MOVF - Move o valor de uma variável para W
+
+exemplo:
+
+movf	contador, W     ; O valor de contador vai para W 
+movwf   LATD            ; É  escrito o valor em W no nos pinos do PORTD por meio do registrador LATD
+
+
+
+
+INCF - Incrementa
+
+exemplo:
+
+incf	contador, 1 ; incrementa de 1 em 1 na variável contador
+
+
+
+
+
+DECF - decrementa
+
+exemplo:
+
+decf	contador, 1
+
+
+
+
+
+BTG - Inverte o valor dos pinos
+
+exemplo:
+
+BTG  LATD, 0   ; Se o RD0 tinho 1 agora possui 0 e se tinho 0 agora tem 1
+
+
+
+
+CÓDIGO SIMPLES
+
+
+
+#include <P18F4550.INC> ; Sempre declarar no inicio do código
+
+org 0x00                ; Determina a posição de inicio do programa
+
+inicio:			; A sua função é só referenciar a parte onde a lógica se iniciará, mas
+			; se não for escrito o código não dará erro por causa disso
+
+
+	    RD7  RD6 RD5 RD4 RD3 RD2 RD1 RD0
+movlw	  B' 0    0   0   0   0   0  0	  0'		; Cada bit será referente a um pino como nesse caso o objetivo é configurar 
+							; como entrada ou saída cada um deles. Sempre da esquerda para a direita (7 à 0)
+
+
+
+
+movwf	  TRISD  					; O registrador TRISX é responsável por configurar como saída 
+							; ou entrada de acordo com o valor que estiver em W, por exemplo 
+							; se RD2 tiver 0 ele será saída, porém se for 1 será entrada. No 
+							; exemplo ao lado todos os pinos (RD7 à RD0) irão ser saída, mas 
+							; não é obrigado configurar os pinos do PORT como todos saídas ou 
+							; todos entradas é possível MOVLW B'11100000', ou seja, RD7, RD6 e 
+							; RD5 irão ser entradas quando MOVWF TRISD
+
+
+loop:
+
+
+setf	LATD, 0  ; Acende todos os bits do PORTD por meio do regidtrador LATD
+
+
+goto	loop
+
+
+end        ; Fim do programa
+
